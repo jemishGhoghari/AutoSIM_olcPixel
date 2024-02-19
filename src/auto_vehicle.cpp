@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
     if (argc>1){
         path = argv[1];
     } else {
-        path = "../Configs/initializeGame.yaml";
+        path = "../configs/initializeGame.yaml";
     }
     
     // Initial Game Config
