@@ -1,1 +1,0 @@
-/usr/bin/g++  -g   CMakeFiles/autonomous_car.dir/src/auto_vehicle.cpp.o  -o autonomous_car  -lX11 -lGL -lpthread -lpng -lstdc++ -lyaml-cpp 

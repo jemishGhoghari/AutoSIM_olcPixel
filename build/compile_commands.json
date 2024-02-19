@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/jemish/olcPixelGameEngine/build",
-  "command": "/usr/bin/g++   -I/home/jemish/olcPixelGameEngine/include -I/home/jemish/olcPixelGameEngine/Configs -I/home/jemish/olcPixelGameEngine/Assets  -g   -std=gnu++17 -o CMakeFiles/autonomous_car.dir/src/auto_vehicle.cpp.o -c /home/jemish/olcPixelGameEngine/src/auto_vehicle.cpp",
-  "file": "/home/jemish/olcPixelGameEngine/src/auto_vehicle.cpp"
-}
-]
