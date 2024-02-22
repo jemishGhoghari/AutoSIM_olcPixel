@@ -41,7 +41,6 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
 
     universal_boundaries(); // Set universal boundaries keep vehicle on the Screen
 
-    // DrawDecal(position, gpuCarRender);
     DrawRotatedDecal(position, gpuCarRender, angle, {30.0, 64.0});
     return true;
 }
