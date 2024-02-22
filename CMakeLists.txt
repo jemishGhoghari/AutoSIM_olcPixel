@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(olcPixelGameEngine_Ex)
+project(AutoSIM_olcPixel)
 
 # Specify the C++ Standard
 set(CMAKE_CXX_STANDARD 17)
@@ -12,18 +12,9 @@ include_directories(${CMAKE_SOURCE_DIR}/Assets)
 include_directories(${CMAKE_SOURCE_DIR}/libraries/olcPixelGameEngine)
 
 # Add Source file
-# add_executable(autonomous_car src/auto_vehicle.cpp)
-add_executable(autonomous_car test/test.cpp)
+add_executable(autonomous_car src/auto_vehicle.cpp)
 
-# link header files to executable
-# target_sources(autonomous_car PRIVATE
-#     ${CMAKE_SOURCE_DIR}/include/auto_vehicle.h
-# )
-
-# target_sources(autonomous_car PRIVATE
-#     ${CMAKE_SOURCE_DIR}/include/olcPixelGameEngine.h
-# )
-
+# Target Link libraries
 target_link_libraries(autonomous_car PRIVATE
     X11
     GL
