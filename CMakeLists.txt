@@ -9,9 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/Configs)
 include_directories(${CMAKE_SOURCE_DIR}/Assets)
+include_directories(${CMAKE_SOURCE_DIR}/libraries/olcPixelGameEngine)
 
 # Add Source file
-add_executable(autonomous_car src/auto_vehicle.cpp)
+# add_executable(autonomous_car src/auto_vehicle.cpp)
+add_executable(autonomous_car test/test.cpp)
 
 # link header files to executable
 # target_sources(autonomous_car PRIVATE

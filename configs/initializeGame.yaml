@@ -1,2 +1,3 @@
 car_png: "../assets/car.png"
 window_size: "1980x1080"
+initial_position: "100x100"

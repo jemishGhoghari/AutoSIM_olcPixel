@@ -1,6 +1,7 @@
 #ifndef AUTO_VEHICLE_H
 #define AUTO_VEHICLE_H
 
+#include <cmath>
 #include "olcPixelGameEngine.h"
 
 namespace autonomous_driving
@@ -10,10 +11,13 @@ namespace autonomous_driving
 struct InitialConfig{
     std::string CarPngPath;
     int32_t width, height;
+    float_t xPosition, yPosition;
 };
 
 void getYAMLData(const std::string& yaml_path, InitialConfig& gameConfig);
-bool extractWidthHeight(const std::string& window_size, int32_t& width, int32_t& height);
+
+template <typename T>
+bool extractWidthHeight(const std::string& window_size, T& width, T& height);
 
 class AutonomousVehicle : public olc::PixelGameEngine
 {
@@ -26,8 +30,10 @@ private:
     float angle;
     // Max Velocity
     float max_vel;
+    // Vehicle Velocity
+    float velocity;
     // Rotational Velocity
-    float rotional_velocity;
+    float rotational_velocity;
 
     // Game Configuartions 
     autonomous_driving::InitialConfig gameConfig;
@@ -44,6 +50,11 @@ public:
 
     bool OnUserCreate() override;
     bool OnUserUpdate(float fElapsedTime) override;
+    void move(float fElapsedTime);
+    void move_forward(float fElapsedTime);
+    void move_backward(float fElapsedTime);
+    void rotate_car(bool left, bool right);
+    void universal_boundaries();
 };
 } // namespace autonomous_driving
 
