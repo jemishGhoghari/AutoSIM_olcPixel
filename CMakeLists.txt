@@ -12,7 +12,10 @@ include_directories(${CMAKE_SOURCE_DIR}/Assets)
 include_directories(${CMAKE_SOURCE_DIR}/libraries/olcPixelGameEngine)
 
 # Add Source file
-add_executable(autonomous_car src/auto_vehicle.cpp)
+add_executable(autonomous_car
+    src/auto_vehicle.cpp
+    src/logger.cpp
+)
 
 # Target Link libraries
 target_link_libraries(autonomous_car PRIVATE

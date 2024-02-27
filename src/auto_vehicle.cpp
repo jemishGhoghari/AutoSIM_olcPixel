@@ -13,15 +13,19 @@ autonomous_driving::AutonomousVehicle::~AutonomousVehicle() = default;
 bool autonomous_driving::AutonomousVehicle::OnUserCreate() {
     // Initialize Position
     position = {gameConfig.xPosition, gameConfig.yPosition};
-    acceleration = 0.1f;
+    acceleration = 0.5f;
     angle = 0.0f;
-    velocity = 500;
+    velocity = 0;
     rotational_velocity = 0.1;
+    max_vel = 500;
 
     std::cout << "[INFO]: Car Loaded. Car started...." << std::endl;
     
     // Car Image loading
     gpuCarRender = new olc::Decal(new olc::Sprite(this->gameConfig.CarPngPath));
+
+    center_of_gravity = {gpuCarRender->sprite->width/2, gpuCarRender->sprite->height/2};
+
     return true;
 }
 
@@ -38,28 +42,33 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
     if (GetKey(olc::Key::RIGHT).bHeld) {
         rotate_car(false, true);
     }
+    if (GetKey(olc::Key::DOWN).bHeld) {
+        move_backward(fElapsedTime);
+    }
 
     universal_boundaries(); // Set universal boundaries keep vehicle on the Screen
 
-    DrawRotatedDecal(position, gpuCarRender, angle, {30.0, 64.0});
+    data_log.log(logger::LogLevel::INFO, "Position: " + std::to_string(position.x) + ", " + std::to_string(position.y));
+    
+    DrawRotatedDecal(position, gpuCarRender, angle, center_of_gravity);
     return true;
 }
 
 void autonomous_driving::AutonomousVehicle::move(float fElapsedTime) {
-    // float_t radians = M_PI * angle / 180.0;
-
     float_t verticle = std::cos(angle) * velocity;
     float_t horizontal = std::sin(angle) * velocity;
     
-    position.y += verticle * fElapsedTime;
-    position.x += horizontal * fElapsedTime;
+    position.y -= verticle * fElapsedTime;
+    position.x -= horizontal * fElapsedTime;
 }
 
 void autonomous_driving::AutonomousVehicle::move_forward(float fElapsedTime) {
+    velocity = std::min(velocity + acceleration, max_vel);
     move(fElapsedTime);
 }
 
 void autonomous_driving::AutonomousVehicle::move_backward(float fElapsedTime) {
+    velocity = std::max(velocity - acceleration, -max_vel/2);
     move(fElapsedTime);
 }
 

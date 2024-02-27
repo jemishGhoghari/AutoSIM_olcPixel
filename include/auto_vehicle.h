@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include "olcPixelGameEngine.h"
+#include "logger.h"
 
 namespace autonomous_driving
 {
@@ -34,6 +35,8 @@ private:
     float velocity;
     // Rotational Velocity
     float rotational_velocity;
+    // Vehicle COG
+    olc::vi2d center_of_gravity;
 
     // Game Configuartions 
     autonomous_driving::InitialConfig gameConfig;
@@ -43,6 +46,9 @@ private:
 
     // Decal: GPU Accelerated Sprite
     olc::Decal* gpuCarRender;
+
+    // Logger
+    logger::Logger data_log;
 
 public:
     AutonomousVehicle(const autonomous_driving::InitialConfig& gameConfig);
