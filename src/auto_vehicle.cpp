@@ -19,7 +19,7 @@ bool autonomous_driving::AutonomousVehicle::OnUserCreate() {
     rotational_velocity = 0.1;
     max_vel = 500;
 
-    std::cout << "[INFO]: Car Loaded. Car started...." << std::endl;
+    data_log.log(logger::LogLevel::INFO, "Car Loaded. Car started....");
     
     // Car Image loading
     gpuCarRender = new olc::Decal(new olc::Sprite(this->gameConfig.CarPngPath));
