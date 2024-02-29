@@ -46,9 +46,20 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
         move_backward(fElapsedTime);
     }
 
+    if (!GetKey(olc::Key::UP).bHeld && !GetKey(olc::Key::DOWN).bHeld) {
+        if (velocity < 0) {
+            velocity += 0.5;
+        }
+        if (velocity > 0) {
+            velocity -= 0.5;
+        }
+        move(fElapsedTime);
+    }
+
     universal_boundaries(); // Set universal boundaries keep vehicle on the Screen
 
-    data_log.log(logger::LogLevel::INFO, "Position: " + std::to_string(position.x) + ", " + std::to_string(position.y));
+    // data_log.log(logger::LogLevel::INFO, "Position: " + std::to_string(position.x) + ", " + std::to_string(position.y));
+    data_log.log(logger::LogLevel::INFO, "Velocity: " + std::to_string(velocity));
     
     DrawRotatedDecal(position, gpuCarRender, angle, center_of_gravity);
     return true;
