@@ -4,6 +4,7 @@
 #include <cmath>
 #include "olcPixelGameEngine.h"
 #include "logger.h"
+#include "vehicle.h"
 
 namespace autonomous_driving
 {

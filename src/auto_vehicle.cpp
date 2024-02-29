@@ -58,7 +58,6 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
 
     universal_boundaries(); // Set universal boundaries keep vehicle on the Screen
 
-    // data_log.log(logger::LogLevel::INFO, "Position: " + std::to_string(position.x) + ", " + std::to_string(position.y));
     data_log.log(logger::LogLevel::INFO, "Velocity: " + std::to_string(velocity));
     
     DrawRotatedDecal(position, gpuCarRender, angle, center_of_gravity);
