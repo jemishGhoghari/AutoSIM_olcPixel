@@ -13,7 +13,7 @@ autonomous_driving::AutonomousVehicle::~AutonomousVehicle() = default;
 bool autonomous_driving::AutonomousVehicle::OnUserCreate() {
     // Initialize Position
     position = {gameConfig.xPosition, gameConfig.yPosition};
-    acceleration = 0.5f;
+    acceleration = 1.0f;
     angle = 0.0f;
     velocity = 0;
     rotational_velocity = 0.1;
@@ -35,15 +35,14 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
     // Keyboard Events
     if (GetKey(olc::Key::UP).bHeld) {
         move_forward(fElapsedTime);
+    } else if (GetKey(olc::Key::DOWN).bHeld) {
+        move_backward(fElapsedTime);
     }
+
     if (GetKey(olc::Key::LEFT).bHeld) {
         rotate_car(true, false);
-    }
-    if (GetKey(olc::Key::RIGHT).bHeld) {
+    } else if (GetKey(olc::Key::RIGHT).bHeld) {
         rotate_car(false, true);
-    }
-    if (GetKey(olc::Key::DOWN).bHeld) {
-        move_backward(fElapsedTime);
     }
 
     if (!GetKey(olc::Key::UP).bHeld && !GetKey(olc::Key::DOWN).bHeld) {
