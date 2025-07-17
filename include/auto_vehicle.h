@@ -5,6 +5,7 @@
 #include "olcPixelGameEngine.h"
 #include "logger.h"
 #include "vehicle.h"
+#include "utils.h"
 
 namespace autonomous_driving
 {

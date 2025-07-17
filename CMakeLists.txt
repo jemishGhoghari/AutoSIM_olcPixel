@@ -27,3 +27,6 @@ target_link_libraries(autonomous_car PRIVATE
     stdc++
     yaml-cpp
 )
+
+enable_testing()
+add_subdirectory(tests)

@@ -1,5 +1,6 @@
 #define OLC_PGE_APPLICATION
 #include "auto_vehicle.h"
+#include "utils.h"
 #include "yaml-cpp/yaml.h"
 
 ////////////////////////////////////////////////////////:- Autonomous Vehicle Class -:////////////////////////////////////////////////////////
@@ -122,18 +123,7 @@ void autonomous_driving::getYAMLData(const std::string& yaml_path, InitialConfig
     std::printf("[INFO]: Initial position is %fx%f \n", gameConfig.xPosition, gameConfig.yPosition);
 }
 
-template <typename T>
-bool autonomous_driving::extractWidthHeight(const std::string& window_size, T& width, T& height){
-    size_t xPos = window_size.find('x');
-    if (xPos != std::string::npos && xPos < window_size.length()){
-        width = std::stoll(window_size.substr(0, xPos));
-        height = std::stoll(window_size.substr(xPos + 1));
-        return true;
-    } else
-    {
-        return false;
-    }   
-}
+
 
 ////////////////////////////////////////////////////////////:- Main Method -:////////////////////////////////////////////////////////////
 int main(int argc, char* argv[]){
