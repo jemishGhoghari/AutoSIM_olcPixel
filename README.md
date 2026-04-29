@@ -34,7 +34,7 @@ sudo apt-get install libx11-dev libgl1-mesa-dev libpng-dev libyaml-cpp-dev
 
 ```bash
 # Clone the repo (with submodules — olcPixelGameEngine is a submodule)
-git clone --recurse-submodules https://github.com/<your-username>/AutoSIM_olcPixel.git
+git clone --recurse-submodules https://github.com/jemishGhoghari/AutoSIM_olcPixel.git
 cd AutoSIM_olcPixel
 
 # Configure and build
