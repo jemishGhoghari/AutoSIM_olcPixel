@@ -34,6 +34,8 @@ struct InitialConfig{
     std::vector<RectangleObstacle> obstacles; /**< Scenario obstacles for robotics navigation testing. */
     std::vector<BoxObstacle3D> obstacles3D; /**< 3D scenario boxes for preview rendering and 3D range scans. */
     Camera3D camera3D; /**< Camera used by the 3D preview renderer. */
+    ThirdPersonCameraConfig thirdPersonCamera; /**< Follow-camera orbit, zoom, and height settings for 3D mode. */
+    std::vector<VehicleModelPart3D> vehicleModel3D = defaultVehicleModel3D(); /**< Procedural 3D vehicle model parts. */
     RangeSensorConfig rangeSensor; /**< Configurable 2D/3D range sensor noise/dropout model. */
     bool showRoboticsOverlay = true; /**< Draw range rays, obstacles, and debugging HUD. */
     bool showGuiOverlay = true; /**< Draw controls, scenario details, and mode information. */
@@ -171,6 +173,7 @@ private:
 
     std::vector<RangeReading> last_scan;
     std::vector<RangeReading3D> last_scan_3d;
+    ThirdPersonCameraConfig activeThirdPersonCamera;
 
     /**
      * @brief Draws robotics debugging overlays such as range rays and obstacles.
@@ -181,6 +184,16 @@ private:
      * @brief Draws a lightweight wireframe 3D preview using olcPGE 2D primitives.
      */
     void draw_3d_preview();
+
+    /**
+     * @brief Draws the composed procedural 3D vehicle model.
+     */
+    void draw_vehicle_model_3d(const Camera3D& camera, Vec3 vehicleOrigin, float vehicleYawRadians);
+
+    /**
+     * @brief Applies 3D follow-camera orbit, zoom, and height controls.
+     */
+    void update_third_person_camera(float fElapsedTime);
 
     /**
      * @brief Draws in-window GUI help and scenario status.

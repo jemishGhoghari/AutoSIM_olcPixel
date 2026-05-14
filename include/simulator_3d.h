@@ -33,8 +33,23 @@ struct Camera3D {
     float nearPlane = 1.0f;
 };
 
+struct ThirdPersonCameraConfig {
+    float distance = 360.0f;
+    float height = 145.0f;
+    float orbitRadians = 0.0f;
+    float minDistance = 140.0f;
+    float maxDistance = 900.0f;
+    float minHeight = 45.0f;
+    float maxHeight = 420.0f;
+};
+
 struct BoxObstacle3D {
     Vec3 center{0.0f, 0.0f, 0.0f};
+    Vec3 size{1.0f, 1.0f, 1.0f};
+};
+
+struct VehicleModelPart3D {
+    Vec3 localCenter{0.0f, 0.0f, 0.0f};
     Vec3 size{1.0f, 1.0f, 1.0f};
 };
 
@@ -82,6 +97,16 @@ inline Vec3 normalize(Vec3 value) {
     return multiply(value, 1.0f / magnitude);
 }
 
+inline Vec3 rotateAroundY(Vec3 value, float yawRadians) {
+    const float cosYaw = std::cos(yawRadians);
+    const float sinYaw = std::sin(yawRadians);
+    return {
+        value.x * cosYaw + value.z * sinYaw,
+        value.y,
+        -value.x * sinYaw + value.z * cosYaw
+    };
+}
+
 inline Vec3 directionFromAngles(float yawRadians, float pitchRadians) {
     const float cosPitch = std::cos(pitchRadians);
     return normalize({std::sin(yawRadians) * cosPitch, std::sin(pitchRadians), std::cos(yawRadians) * cosPitch});
@@ -107,6 +132,23 @@ inline Vec3 rotateWorldToCamera(Vec3 point, const Camera3D& camera) {
     };
 }
 
+inline Camera3D makeThirdPersonCamera(Vec3 target, float vehicleYawRadians, ThirdPersonCameraConfig config) {
+    config.distance = clampFloat(config.distance, config.minDistance, config.maxDistance);
+    config.height = clampFloat(config.height, config.minHeight, config.maxHeight);
+
+    const float cameraYawAroundTarget = vehicleYawRadians + config.orbitRadians;
+    const Vec3 forward = directionFromAngles(cameraYawAroundTarget, 0.0f);
+    const Vec3 position = add(subtract(target, multiply(forward, config.distance)), {0.0f, config.height, 0.0f});
+    const Vec3 toTarget = subtract(target, position);
+    const float horizontal = std::sqrt(toTarget.x * toTarget.x + toTarget.z * toTarget.z);
+
+    Camera3D camera;
+    camera.position = position;
+    camera.yawRadians = std::atan2(toTarget.x, toTarget.z);
+    camera.pitchRadians = std::atan2(toTarget.y, horizontal);
+    return camera;
+}
+
 inline ProjectedPoint projectPoint(Vec3 point, const Camera3D& camera, float screenWidth, float screenHeight) {
     const Vec3 cameraSpace = rotateWorldToCamera(point, camera);
     if (cameraSpace.z <= camera.nearPlane) {
@@ -117,6 +159,26 @@ inline ProjectedPoint projectPoint(Vec3 point, const Camera3D& camera, float scr
         screenWidth * 0.5f + (cameraSpace.x * camera.focalLength) / cameraSpace.z,
         screenHeight * 0.5f - (cameraSpace.y * camera.focalLength) / cameraSpace.z
     }, true, cameraSpace.z};
+}
+
+inline std::array<Vec3, 8> orientedBoxCorners(const VehicleModelPart3D& part, Vec3 worldOrigin, float yawRadians) {
+    const Vec3 half = multiply(part.size, 0.5f);
+    const std::array<Vec3, 8> localCorners{{
+        {part.localCenter.x - half.x, part.localCenter.y - half.y, part.localCenter.z - half.z},
+        {part.localCenter.x + half.x, part.localCenter.y - half.y, part.localCenter.z - half.z},
+        {part.localCenter.x + half.x, part.localCenter.y + half.y, part.localCenter.z - half.z},
+        {part.localCenter.x - half.x, part.localCenter.y + half.y, part.localCenter.z - half.z},
+        {part.localCenter.x - half.x, part.localCenter.y - half.y, part.localCenter.z + half.z},
+        {part.localCenter.x + half.x, part.localCenter.y - half.y, part.localCenter.z + half.z},
+        {part.localCenter.x + half.x, part.localCenter.y + half.y, part.localCenter.z + half.z},
+        {part.localCenter.x - half.x, part.localCenter.y + half.y, part.localCenter.z + half.z}
+    }};
+
+    std::array<Vec3, 8> corners{};
+    for (std::size_t i = 0; i < localCorners.size(); ++i) {
+        corners[i] = add(worldOrigin, rotateAroundY(localCorners[i], yawRadians));
+    }
+    return corners;
 }
 
 inline std::array<Vec3, 8> boxCorners(const BoxObstacle3D& box) {
@@ -131,6 +193,18 @@ inline std::array<Vec3, 8> boxCorners(const BoxObstacle3D& box) {
         {box.center.x + half.x, box.center.y + half.y, box.center.z + half.z},
         {box.center.x - half.x, box.center.y + half.y, box.center.z + half.z}
     }};
+}
+
+inline std::vector<VehicleModelPart3D> defaultVehicleModel3D() {
+    return {
+        {{0.0f, 18.0f, 0.0f}, {70.0f, 26.0f, 120.0f}},
+        {{0.0f, 42.0f, -8.0f}, {46.0f, 28.0f, 58.0f}},
+        {{-42.0f, 12.0f, -38.0f}, {16.0f, 24.0f, 24.0f}},
+        {{42.0f, 12.0f, -38.0f}, {16.0f, 24.0f, 24.0f}},
+        {{-42.0f, 12.0f, 38.0f}, {16.0f, 24.0f, 24.0f}},
+        {{42.0f, 12.0f, 38.0f}, {16.0f, 24.0f, 24.0f}},
+        {{0.0f, 28.0f, 72.0f}, {30.0f, 16.0f, 18.0f}}
+    };
 }
 
 inline const std::array<std::array<int, 2>, 12>& boxEdges() {

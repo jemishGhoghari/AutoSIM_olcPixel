@@ -51,6 +51,20 @@ int main() {
         assert(std::fabs(reading.measuredRange - 15.0f) < 1e-5f);
     }
 
+    const auto model = defaultVehicleModel3D();
+    assert(model.size() >= 3);
+    const auto corners = orientedBoxCorners({{0.0f, 0.0f, 10.0f}, {2.0f, 2.0f, 2.0f}}, {5.0f, 0.0f, 0.0f}, kPi);
+    assert(std::fabs(corners[0].x - 6.0f) < 1e-5f);
+    assert(std::fabs(corners[0].z + 9.0f) < 1e-5f);
+
+    ThirdPersonCameraConfig followConfig;
+    followConfig.distance = 100.0f;
+    followConfig.height = 50.0f;
+    const Camera3D followCamera = makeThirdPersonCamera({0.0f, 0.0f, 0.0f}, kPi, followConfig);
+    assert(std::fabs(followCamera.position.x) < 1e-4f);
+    assert(std::fabs(followCamera.position.y - 50.0f) < 1e-5f);
+    assert(std::fabs(followCamera.position.z - 140.0f) < 1e-5f);
+
     Camera3D camera;
     camera.position = {0.0f, 0.0f, 0.0f};
     camera.pitchRadians = 0.0f;
