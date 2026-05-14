@@ -1,15 +1,35 @@
+scenario_name: "warehouse-smoke-test"
+simulator_mode: "2d"                 # "2d" or "3d_preview"; F2 toggles at runtime
 car_png: "../assets/car.png"
 window_size: "1980x1080"
 initial_position: "100x100"
 
 # Robotics engineer mode: prototype navigation against repeatable, noisy sensors
 # without needing a full Gazebo/Isaac stack for early algorithm smoke tests.
-robotics_overlay: true
+robotics_overlay: true                 # F1 toggles range rays/obstacles at runtime
+gui_overlay: true                      # TAB toggles the in-window help/status panel
+
+# User-authored 2D scenario obstacles: "x y width height" encoded as x-delimited values.
 obstacles:
   - "460x220x160x90"
   - "820x520x130x220"
   - "1280x260x240x120"
   - "1460x720x180x180"
+
+# User-authored 3D preview boxes: "x y z width depth height" in simulator units.
+# x/z place the footprint on the ground plane; y is the floor elevation.
+obstacles_3d:
+  - "-420x0x360x160x90x110"
+  - "-40x0x620x130x220x160"
+  - "420x0x420x240x120x140"
+  - "650x0x860x180x180x180"
+
+camera_3d:
+  position: "0x180x-520"
+  yaw_degrees: 0
+  pitch_degrees: -12
+  focal_length: 520
+
 range_sensor:
   rays: 41
   fov_degrees: 180
