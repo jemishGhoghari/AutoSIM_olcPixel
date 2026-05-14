@@ -1,3 +1,19 @@
 car_png: "../assets/car.png"
 window_size: "1980x1080"
 initial_position: "100x100"
+
+# Robotics engineer mode: prototype navigation against repeatable, noisy sensors
+# without needing a full Gazebo/Isaac stack for early algorithm smoke tests.
+robotics_overlay: true
+obstacles:
+  - "460x220x160x90"
+  - "820x520x130x220"
+  - "1280x260x240x120"
+  - "1460x720x180x180"
+range_sensor:
+  rays: 41
+  fov_degrees: 180
+  max_range: 420
+  noise_stddev: 2.5
+  dropout_rate: 0.03
+  random_seed: 42

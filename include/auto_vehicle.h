@@ -2,10 +2,15 @@
 #define AUTO_VEHICLE_H
 
 #include <cmath>
+#include <cstdint>
+#include <string>
 #include "olcPixelGameEngine.h"
 #include "logger.h"
 #include "vehicle.h"
 #include "utils.h"
+#include "robotics_scenario.h"
+
+#include <vector>
 
 namespace autonomous_driving
 {
@@ -18,6 +23,9 @@ struct InitialConfig{
     int32_t height; /**< Height of the vehicle. */
     float_t xPosition; /**< X-coordinate of the initial position of the vehicle. */
     float_t yPosition; /**< Y-coordinate of the initial position of the vehicle. */
+    std::vector<RectangleObstacle> obstacles; /**< Scenario obstacles for robotics navigation testing. */
+    RangeSensorConfig rangeSensor; /**< Configurable 2D range sensor noise/dropout model. */
+    bool showRoboticsOverlay = true; /**< Draw range rays, obstacles, and debugging HUD. */
 };
 
 /**
@@ -136,6 +144,18 @@ private:
      * @endcode
      */
     logger::Logger data_log;
+
+    std::vector<RangeReading> last_scan;
+
+    /**
+     * @brief Draws robotics debugging overlays such as range rays and obstacles.
+     */
+    void draw_robotics_overlay();
+
+    /**
+     * @brief Returns the simulated sensor origin at the vehicle center.
+     */
+    Point2D get_sensor_origin() const;
 
 public:
     AutonomousVehicle(const autonomous_driving::InitialConfig& gameConfig);

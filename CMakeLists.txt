@@ -11,22 +11,27 @@ include_directories(${CMAKE_SOURCE_DIR}/Configs)
 include_directories(${CMAKE_SOURCE_DIR}/Assets)
 include_directories(${CMAKE_SOURCE_DIR}/libraries/olcPixelGameEngine)
 
-# Add Source file
-add_executable(autonomous_car
-    src/auto_vehicle.cpp
-    src/logger.cpp
-    src/vehicle.cpp
-)
+set(OLC_PGE_HEADER ${CMAKE_SOURCE_DIR}/libraries/olcPixelGameEngine/olcPixelGameEngine.h)
+if(EXISTS ${OLC_PGE_HEADER})
+    # Add Source file
+    add_executable(autonomous_car
+        src/auto_vehicle.cpp
+        src/logger.cpp
+        src/vehicle.cpp
+    )
 
-# Target Link libraries
-target_link_libraries(autonomous_car PRIVATE
-    X11
-    GL
-    pthread
-    png
-    stdc++
-    yaml-cpp
-)
+    # Target Link libraries
+    target_link_libraries(autonomous_car PRIVATE
+        X11
+        GL
+        pthread
+        png
+        stdc++
+        yaml-cpp
+    )
+else()
+    message(WARNING "olcPixelGameEngine.h was not found. Skipping autonomous_car; run `git submodule update --init --recursive` to build the simulator executable.")
+endif()
 
 enable_testing()
 add_subdirectory(tests)
