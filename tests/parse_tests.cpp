@@ -18,5 +18,16 @@ int main() {
     ok = autonomous_driving::extractWidthHeight<int>("1920-1080", badW, badH);
     assert(!ok);
 
+    float x = 0.f, y = 0.f, rectW = 0.f, rectH = 0.f;
+    ok = autonomous_driving::extractRectangle<float>("10x20x30x40", x, y, rectW, rectH);
+    assert(ok);
+    assert(std::fabs(x - 10.f) < 1e-6f);
+    assert(std::fabs(y - 20.f) < 1e-6f);
+    assert(std::fabs(rectW - 30.f) < 1e-6f);
+    assert(std::fabs(rectH - 40.f) < 1e-6f);
+
+    ok = autonomous_driving::extractRectangle<float>("10x20x30", x, y, rectW, rectH);
+    assert(!ok);
+
     return 0;
 }
