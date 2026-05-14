@@ -48,10 +48,10 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
     Clear(olc::WHITE);
 
     // Keyboard Events
-    const bool accelerating = GetKey(olc::Key::UP).bHeld;
-    const bool reversing = GetKey(olc::Key::DOWN).bHeld;
-    const bool steeringLeft = GetKey(olc::Key::LEFT).bHeld;
-    const bool steeringRight = GetKey(olc::Key::RIGHT).bHeld;
+    const bool accelerating = GetKey(olc::Key::UP).bHeld || GetKey(olc::Key::W).bHeld;
+    const bool reversing = GetKey(olc::Key::DOWN).bHeld || GetKey(olc::Key::S).bHeld;
+    const bool steeringLeft = GetKey(olc::Key::LEFT).bHeld || GetKey(olc::Key::A).bHeld;
+    const bool steeringRight = GetKey(olc::Key::RIGHT).bHeld || GetKey(olc::Key::D).bHeld;
 
     if (accelerating) {
         move_forward(fElapsedTime);
@@ -218,28 +218,30 @@ void autonomous_driving::AutonomousVehicle::draw_robotics_overlay() {
 
 
 void autonomous_driving::AutonomousVehicle::update_third_person_camera(float fElapsedTime) {
-    const float orbitSpeed = 1.5f * fElapsedTime;
-    const float zoomSpeed = 320.0f * fElapsedTime;
-    const float heightSpeed = 220.0f * fElapsedTime;
+    (void)fElapsedTime;
 
-    if (GetKey(olc::Key::A).bHeld) {
-        activeThirdPersonCamera.orbitRadians -= orbitSpeed;
+    const int mouseX = GetMouseX();
+    const int mouseY = GetMouseY();
+    if (GetMouse(0).bPressed) {
+        lastCameraMouseX = mouseX;
+        lastCameraMouseY = mouseY;
+    } else if (GetMouse(0).bHeld) {
+        const int deltaX = mouseX - lastCameraMouseX;
+        const int deltaY = mouseY - lastCameraMouseY;
+        constexpr float orbitRadiansPerPixel = 0.006f;
+        constexpr float heightUnitsPerPixel = 1.5f;
+        activeThirdPersonCamera.orbitRadians += static_cast<float>(deltaX) * orbitRadiansPerPixel;
+        activeThirdPersonCamera.height -= static_cast<float>(deltaY) * heightUnitsPerPixel;
+        lastCameraMouseX = mouseX;
+        lastCameraMouseY = mouseY;
     }
-    if (GetKey(olc::Key::D).bHeld) {
-        activeThirdPersonCamera.orbitRadians += orbitSpeed;
+
+    const int mouseWheelDelta = GetMouseWheel();
+    if (mouseWheelDelta != 0) {
+        constexpr float zoomUnitsPerWheelTick = 0.35f;
+        activeThirdPersonCamera.distance -= static_cast<float>(mouseWheelDelta) * zoomUnitsPerWheelTick;
     }
-    if (GetKey(olc::Key::W).bHeld) {
-        activeThirdPersonCamera.distance -= zoomSpeed;
-    }
-    if (GetKey(olc::Key::S).bHeld) {
-        activeThirdPersonCamera.distance += zoomSpeed;
-    }
-    if (GetKey(olc::Key::Q).bHeld) {
-        activeThirdPersonCamera.height += heightSpeed;
-    }
-    if (GetKey(olc::Key::E).bHeld) {
-        activeThirdPersonCamera.height -= heightSpeed;
-    }
+
     if (GetKey(olc::Key::R).bPressed) {
         activeThirdPersonCamera = gameConfig.thirdPersonCamera;
     }
@@ -355,8 +357,8 @@ void autonomous_driving::AutonomousVehicle::draw_gui_overlay() {
         << " | Mode: " << simulatorModeToString(gameConfig.simulatorMode)
         << " | Sensor hits " << hits << " dropouts " << dropouts;
     DrawString(16, ScreenHeight() - 78, hud.str(), olc::BLACK, 1);
-    DrawString(16, ScreenHeight() - 58, "Controls: Arrow drive | F1 sensors | F2 2D/3D | TAB GUI | 3D cam WASD/QE, R reset", olc::BLACK, 1);
-    DrawString(16, ScreenHeight() - 38, "3D mode follows the procedural vehicle model with a movable third-person camera.", olc::DARK_BLUE, 1);
+    DrawString(16, ScreenHeight() - 58, "Controls: Arrow/WASD drive | F1 sensors | F2 2D/3D | TAB GUI | R reset 3D cam", olc::BLACK, 1);
+    DrawString(16, ScreenHeight() - 38, "3D camera: hold left mouse and drag to orbit/raise/lower; mouse wheel zooms.", olc::DARK_BLUE, 1);
 }
 
 void autonomous_driving::AutonomousVehicle::universal_boundaries() {

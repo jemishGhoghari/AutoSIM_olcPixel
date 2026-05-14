@@ -1,6 +1,6 @@
 # AutoSIM — Autonomous Driving Simulator
 
-A 2D autonomous driving simulator with an optional lightweight 3D preview, built with [olcPixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine). Drive a car around the screen using the arrow keys. Configuration (window size, starting position, car sprite, scenario obstacles, sensors, and 3D preview camera) is loaded from YAML files so users can author their own scenarios without recompiling.
+A 2D autonomous driving simulator with an optional lightweight 3D preview, built with [olcPixelGameEngine](https://github.com/OneLoneCoder/olcPixelGameEngine). Drive a car around the screen using the arrow keys or WASD. Configuration (window size, starting position, car sprite, scenario obstacles, sensors, and 3D preview camera) is loaded from YAML files so users can author their own scenarios without recompiling.
 
 ![Demo Screenshot](assets/screenshot.png)
 <!-- Replace with an actual screenshot of the simulator running -->
@@ -102,9 +102,9 @@ camera_3d:
   focal_length: 520
 
 third_person_camera:
-  distance: 360                 # W/S zoom in/out
-  height: 145                   # Q/E raise/lower camera
-  orbit_degrees: 0              # A/D orbit around the vehicle; R resets
+  distance: 360                 # Mouse wheel zooms the 3D follow camera at runtime
+  height: 145                   # Left-mouse drag vertically raises/lowers camera
+  orbit_degrees: 0              # Left-mouse drag horizontally orbits; R resets
   min_distance: 140
   max_distance: 900
   min_height: 45
@@ -132,18 +132,17 @@ range_sensor:
 
 ## Controls
 
-| Key        | Action          |
+| Input      | Action          |
 |------------|-----------------|
-| ↑ Up       | Accelerate      |
-| ↓ Down     | Reverse         |
-| ← Left     | Rotate left     |
-| → Right    | Rotate right    |
+| ↑ Up / W   | Accelerate      |
+| ↓ Down / S | Reverse         |
+| ← Left / A | Rotate left     |
+| → Right / D| Rotate right    |
 | F1         | Toggle robotics/range overlay |
 | F2         | Toggle 2D / 3D preview mode |
 | Tab        | Toggle GUI/status panel |
-| A / D      | Orbit the 3D third-person camera left/right |
-| W / S      | Zoom the 3D third-person camera in/out |
-| Q / E      | Raise/lower the 3D third-person camera |
+| Left mouse drag | Orbit the 3D third-person camera left/right and raise/lower it |
+| Mouse wheel | Zoom the 3D third-person camera in/out |
 | R          | Reset the 3D third-person camera |
 
 ---
