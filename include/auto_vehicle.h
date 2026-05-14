@@ -176,6 +176,16 @@ private:
     ThirdPersonCameraConfig activeThirdPersonCamera;
 
     /**
+     * @brief Last mouse X coordinate sampled while dragging the 3D camera.
+     */
+    int lastCameraMouseX = 0;
+
+    /**
+     * @brief Last mouse Y coordinate sampled while dragging the 3D camera.
+     */
+    int lastCameraMouseY = 0;
+
+    /**
      * @brief Draws robotics debugging overlays such as range rays and obstacles.
      */
     void draw_robotics_overlay();
@@ -191,7 +201,7 @@ private:
     void draw_vehicle_model_3d(const Camera3D& camera, Vec3 vehicleOrigin, float vehicleYawRadians);
 
     /**
-     * @brief Applies 3D follow-camera orbit, zoom, and height controls.
+     * @brief Applies mouse-based 3D follow-camera orbit, zoom, and height controls.
      */
     void update_third_person_camera(float fElapsedTime);
 

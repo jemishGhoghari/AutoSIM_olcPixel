@@ -31,9 +31,9 @@ camera_3d:
   focal_length: 520
 
 third_person_camera:
-  distance: 360                 # W/S zoom the follow camera in/out at runtime.
-  height: 145                   # Q/E raise/lower the follow camera.
-  orbit_degrees: 0              # A/D orbit around the vehicle; R resets to these values.
+  distance: 360                 # Mouse wheel zooms the follow camera in/out at runtime.
+  height: 145                   # Left-mouse vertical drag raises/lowers the follow camera.
+  orbit_degrees: 0              # Left-mouse horizontal drag orbits; R resets to these values.
   min_distance: 140
   max_distance: 900
   min_height: 45
