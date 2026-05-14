@@ -25,10 +25,30 @@ obstacles_3d:
   - "650x0x860x180x180x180"
 
 camera_3d:
-  position: "0x180x-520"
+  position: "0x180x-520"       # Used as startup/focal fallback; 3D mode follows the vehicle.
   yaw_degrees: 0
   pitch_degrees: -12
   focal_length: 520
+
+third_person_camera:
+  distance: 360                 # W/S zoom the follow camera in/out at runtime.
+  height: 145                   # Q/E raise/lower the follow camera.
+  orbit_degrees: 0              # A/D orbit around the vehicle; R resets to these values.
+  min_distance: 140
+  max_distance: 900
+  min_height: 45
+  max_height: 420
+
+# Procedural 3D vehicle model parts: "local_x local_y local_z width depth height"
+# encoded as x-delimited values and attached to the simulated vehicle pose.
+vehicle_model_3d:
+  - "0x18x0x70x120x26"          # chassis
+  - "0x42x-8x46x58x28"         # cabin
+  - "-42x12x-38x16x24x24"      # rear-left wheel
+  - "42x12x-38x16x24x24"       # rear-right wheel
+  - "-42x12x38x16x24x24"       # front-left wheel
+  - "42x12x38x16x24x24"        # front-right wheel
+  - "0x28x72x30x18x16"         # front marker
 
 range_sensor:
   rays: 41

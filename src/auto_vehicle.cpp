@@ -27,6 +27,7 @@ bool autonomous_driving::AutonomousVehicle::OnUserCreate() {
     velocity = 0;
     rotational_velocity = 3.0f;
     max_vel = 500;
+    activeThirdPersonCamera = gameConfig.thirdPersonCamera;
 
     data_log.log(logger::LogLevel::INFO, "Car Loaded. Car started....");
     data_log.log(logger::LogLevel::INFO, "Scenario '" + gameConfig.scenarioName + "' loaded in " +
@@ -82,6 +83,10 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
     }
 
     if (gameConfig.simulatorMode == SimulatorMode::Preview3D) {
+        update_third_person_camera(fElapsedTime);
+        const float configuredFocalLength = gameConfig.camera3D.focalLength;
+        gameConfig.camera3D = makeThirdPersonCamera(get_sensor_origin_3d(), kPi - angle, activeThirdPersonCamera);
+        gameConfig.camera3D.focalLength = std::max(120.0f, configuredFocalLength);
         last_scan_3d = simulateRangeScan3D(
             get_sensor_origin_3d(),
             kPi - angle,
@@ -212,6 +217,68 @@ void autonomous_driving::AutonomousVehicle::draw_robotics_overlay() {
 }
 
 
+void autonomous_driving::AutonomousVehicle::update_third_person_camera(float fElapsedTime) {
+    const float orbitSpeed = 1.5f * fElapsedTime;
+    const float zoomSpeed = 320.0f * fElapsedTime;
+    const float heightSpeed = 220.0f * fElapsedTime;
+
+    if (GetKey(olc::Key::A).bHeld) {
+        activeThirdPersonCamera.orbitRadians -= orbitSpeed;
+    }
+    if (GetKey(olc::Key::D).bHeld) {
+        activeThirdPersonCamera.orbitRadians += orbitSpeed;
+    }
+    if (GetKey(olc::Key::W).bHeld) {
+        activeThirdPersonCamera.distance -= zoomSpeed;
+    }
+    if (GetKey(olc::Key::S).bHeld) {
+        activeThirdPersonCamera.distance += zoomSpeed;
+    }
+    if (GetKey(olc::Key::Q).bHeld) {
+        activeThirdPersonCamera.height += heightSpeed;
+    }
+    if (GetKey(olc::Key::E).bHeld) {
+        activeThirdPersonCamera.height -= heightSpeed;
+    }
+    if (GetKey(olc::Key::R).bPressed) {
+        activeThirdPersonCamera = gameConfig.thirdPersonCamera;
+    }
+
+    activeThirdPersonCamera.distance = clampFloat(
+        activeThirdPersonCamera.distance,
+        activeThirdPersonCamera.minDistance,
+        activeThirdPersonCamera.maxDistance
+    );
+    activeThirdPersonCamera.height = clampFloat(
+        activeThirdPersonCamera.height,
+        activeThirdPersonCamera.minHeight,
+        activeThirdPersonCamera.maxHeight
+    );
+}
+
+void autonomous_driving::AutonomousVehicle::draw_vehicle_model_3d(const Camera3D& camera, Vec3 vehicleOrigin, float vehicleYawRadians) {
+    const auto project = [&](Vec3 point) {
+        return projectPoint(point, camera, static_cast<float>(ScreenWidth()), static_cast<float>(ScreenHeight()));
+    };
+
+    const std::vector<olc::Pixel> partColors{
+        olc::DARK_GREEN, olc::GREEN, olc::BLACK, olc::BLACK, olc::BLACK, olc::BLACK, olc::YELLOW
+    };
+
+    for (std::size_t partIndex = 0; partIndex < gameConfig.vehicleModel3D.size(); ++partIndex) {
+        const auto corners = orientedBoxCorners(gameConfig.vehicleModel3D[partIndex], vehicleOrigin, vehicleYawRadians);
+        const olc::Pixel color = partColors[std::min(partIndex, partColors.size() - 1)];
+        for (const auto& edge : boxEdges()) {
+            const ProjectedPoint start = project(corners[static_cast<std::size_t>(edge[0])]);
+            const ProjectedPoint end = project(corners[static_cast<std::size_t>(edge[1])]);
+            if (start.visible && end.visible) {
+                DrawLine(static_cast<int>(start.screen.x), static_cast<int>(start.screen.y),
+                         static_cast<int>(end.screen.x), static_cast<int>(end.screen.y), color);
+            }
+        }
+    }
+}
+
 void autonomous_driving::AutonomousVehicle::draw_3d_preview() {
     const auto project = [&](Vec3 point) {
         return projectPoint(point, gameConfig.camera3D, static_cast<float>(ScreenWidth()), static_cast<float>(ScreenHeight()));
@@ -246,8 +313,9 @@ void autonomous_driving::AutonomousVehicle::draw_3d_preview() {
 
     const Vec3 vehicleOrigin = get_sensor_origin_3d();
     const ProjectedPoint vehicle = project(vehicleOrigin);
+    draw_vehicle_model_3d(gameConfig.camera3D, vehicleOrigin, kPi - angle);
     if (vehicle.visible) {
-        FillCircle(static_cast<int>(vehicle.screen.x), static_cast<int>(vehicle.screen.y), 5, olc::GREEN);
+        FillCircle(static_cast<int>(vehicle.screen.x), static_cast<int>(vehicle.screen.y), 3, olc::GREEN);
     }
 
     if (gameConfig.showRoboticsOverlay) {
@@ -287,8 +355,8 @@ void autonomous_driving::AutonomousVehicle::draw_gui_overlay() {
         << " | Mode: " << simulatorModeToString(gameConfig.simulatorMode)
         << " | Sensor hits " << hits << " dropouts " << dropouts;
     DrawString(16, ScreenHeight() - 78, hud.str(), olc::BLACK, 1);
-    DrawString(16, ScreenHeight() - 58, "Controls: Arrow keys drive | F1 sensor overlay | F2 2D/3D preview | TAB GUI", olc::BLACK, 1);
-    DrawString(16, ScreenHeight() - 38, "3D preview is wireframe projection on olcPGE; use authored YAML boxes for scenarios.", olc::DARK_BLUE, 1);
+    DrawString(16, ScreenHeight() - 58, "Controls: Arrow drive | F1 sensors | F2 2D/3D | TAB GUI | 3D cam WASD/QE, R reset", olc::BLACK, 1);
+    DrawString(16, ScreenHeight() - 38, "3D mode follows the procedural vehicle model with a movable third-person camera.", olc::DARK_BLUE, 1);
 }
 
 void autonomous_driving::AutonomousVehicle::universal_boundaries() {
@@ -408,6 +476,52 @@ void autonomous_driving::getYAMLData(const std::string& yaml_path, InitialConfig
         }
         if (camera["focal_length"]) {
             gameConfig.camera3D.focalLength = camera["focal_length"].as<float>();
+        }
+    }
+
+
+    if (config["third_person_camera"]) {
+        const YAML::Node thirdPerson = config["third_person_camera"];
+        if (thirdPerson["distance"]) {
+            gameConfig.thirdPersonCamera.distance = thirdPerson["distance"].as<float>();
+        }
+        if (thirdPerson["height"]) {
+            gameConfig.thirdPersonCamera.height = thirdPerson["height"].as<float>();
+        }
+        if (thirdPerson["orbit_degrees"]) {
+            gameConfig.thirdPersonCamera.orbitRadians = degreesToRadians(thirdPerson["orbit_degrees"].as<float>());
+        }
+        if (thirdPerson["min_distance"]) {
+            gameConfig.thirdPersonCamera.minDistance = thirdPerson["min_distance"].as<float>();
+        }
+        if (thirdPerson["max_distance"]) {
+            gameConfig.thirdPersonCamera.maxDistance = thirdPerson["max_distance"].as<float>();
+        }
+        if (thirdPerson["min_height"]) {
+            gameConfig.thirdPersonCamera.minHeight = thirdPerson["min_height"].as<float>();
+        }
+        if (thirdPerson["max_height"]) {
+            gameConfig.thirdPersonCamera.maxHeight = thirdPerson["max_height"].as<float>();
+        }
+    }
+
+    if (config["vehicle_model_3d"]) {
+        std::vector<VehicleModelPart3D> configuredModel;
+        for (const auto& partNode : config["vehicle_model_3d"]) {
+            float x = 0.0f;
+            float y = 0.0f;
+            float z = 0.0f;
+            float width = 0.0f;
+            float depth = 0.0f;
+            float height = 0.0f;
+            if (extractBox<float>(partNode.as<std::string>(), x, y, z, width, depth, height)) {
+                configuredModel.push_back({{x, y, z}, {width, height, depth}});
+            } else {
+                std::cerr << "Cannot Extract 3D Vehicle Model Part: " << partNode.as<std::string>() << std::endl;
+            }
+        }
+        if (!configuredModel.empty()) {
+            gameConfig.vehicleModel3D = configuredModel;
         }
     }
 

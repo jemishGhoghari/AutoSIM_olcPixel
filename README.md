@@ -20,7 +20,7 @@ Robotics engineers repeatedly report that simulation is useful for reducing slow
 - Built-in logger with INFO / WARNING / ERROR levels
 - Robotics scenario overlay with configurable rectangular obstacles
 - Deterministic 2D range sensor simulator with field-of-view, ray count, max range, Gaussian noise, dropout rate, and seed controls
-- Lightweight 3D preview mode with AutoSIM-owned projection math, wireframe boxes, and deterministic 3D range scans
+- Lightweight 3D preview mode with AutoSIM-owned projection math, wireframe boxes, a procedural 3D vehicle model, movable third-person follow camera, and deterministic 3D range scans
 - User-authored YAML scenarios for 2D rectangles, 3D boxes, camera settings, and sensor behavior
 - In-window GUI/status overlay with discoverable runtime controls
 
@@ -96,10 +96,28 @@ obstacles_3d:                       # 3D x/y/z/width/depth/height boxes
   - "-40x0x620x130x220x160"
 
 camera_3d:
-  position: "0x180x-520"
+  position: "0x180x-520"       # Focal/startup fallback; 3D mode follows the car
   yaw_degrees: 0
   pitch_degrees: -12
   focal_length: 520
+
+third_person_camera:
+  distance: 360                 # W/S zoom in/out
+  height: 145                   # Q/E raise/lower camera
+  orbit_degrees: 0              # A/D orbit around the vehicle; R resets
+  min_distance: 140
+  max_distance: 900
+  min_height: 45
+  max_height: 420
+
+vehicle_model_3d:                # local_x/local_y/local_z/width/depth/height parts
+  - "0x18x0x70x120x26"          # chassis
+  - "0x42x-8x46x58x28"         # cabin
+  - "-42x12x-38x16x24x24"      # rear-left wheel
+  - "42x12x-38x16x24x24"       # rear-right wheel
+  - "-42x12x38x16x24x24"       # front-left wheel
+  - "42x12x38x16x24x24"        # front-right wheel
+  - "0x28x72x30x18x16"         # front marker
 
 range_sensor:
   rays: 41                          # Number of simulated range beams
@@ -123,6 +141,10 @@ range_sensor:
 | F1         | Toggle robotics/range overlay |
 | F2         | Toggle 2D / 3D preview mode |
 | Tab        | Toggle GUI/status panel |
+| A / D      | Orbit the 3D third-person camera left/right |
+| W / S      | Zoom the 3D third-person camera in/out |
+| Q / E      | Raise/lower the 3D third-person camera |
+| R          | Reset the 3D third-person camera |
 
 ---
 
@@ -133,7 +155,8 @@ The robotics overlay is designed for early navigation and perception smoke tests
 1. Add obstacle rectangles to `configs/initializeGame.yaml`.
 2. Tune the range sensor model to mimic imperfect low-cost lidar, sonar, IR, or depth preprocessing.
 3. Add `obstacles_3d` boxes and set `simulator_mode: "3d_preview"` when you want a projected 3D smoke-test view.
-4. Use the deterministic `random_seed` to reproduce a failure case, then increase `noise_stddev` or `dropout_rate` to check robustness.
+4. Tune `third_person_camera` and `vehicle_model_3d` to inspect the procedural vehicle from a movable chase-camera view.
+5. Use the deterministic `random_seed` to reproduce a failure case, then increase `noise_stddev` or `dropout_rate` to check robustness.
 
 This feature intentionally solves a small pain point: quick, repeatable testing of obstacle-avoidance assumptions before spending time in a heavier simulator or on physical hardware. The 3D preview is a reliable visualization and range-sensor smoke-test layer, but it does **not** claim physical fidelity, wheel slip, 3D contact dynamics, ROS integration, textured model loading, or camera-realistic synthetic data.
 
