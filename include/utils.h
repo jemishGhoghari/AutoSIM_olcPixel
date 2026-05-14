@@ -57,6 +57,22 @@ bool extractRectangle(const std::string& rectangle, T& x, T& y, T& width, T& hei
     return true;
 }
 
+template <typename T>
+bool extractBox(const std::string& box, T& x, T& y, T& z, T& width, T& depth, T& height) {
+    std::vector<T> values;
+    if (!extractDelimitedValues<T>(box, 'x', values) || values.size() != 6) {
+        return false;
+    }
+
+    x = values[0];
+    y = values[1];
+    z = values[2];
+    width = values[3];
+    depth = values[4];
+    height = values[5];
+    return true;
+}
+
 } // namespace autonomous_driving
 
 #endif // UTILS_H

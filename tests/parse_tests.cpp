@@ -29,5 +29,18 @@ int main() {
     ok = autonomous_driving::extractRectangle<float>("10x20x30", x, y, rectW, rectH);
     assert(!ok);
 
+    float z = 0.f, boxW = 0.f, boxD = 0.f, boxH = 0.f;
+    ok = autonomous_driving::extractBox<float>("10x20x30x40x50x60", x, y, z, boxW, boxD, boxH);
+    assert(ok);
+    assert(std::fabs(x - 10.f) < 1e-6f);
+    assert(std::fabs(y - 20.f) < 1e-6f);
+    assert(std::fabs(z - 30.f) < 1e-6f);
+    assert(std::fabs(boxW - 40.f) < 1e-6f);
+    assert(std::fabs(boxD - 50.f) < 1e-6f);
+    assert(std::fabs(boxH - 60.f) < 1e-6f);
+
+    ok = autonomous_driving::extractBox<float>("10x20x30x40x50", x, y, z, boxW, boxD, boxH);
+    assert(!ok);
+
     return 0;
 }

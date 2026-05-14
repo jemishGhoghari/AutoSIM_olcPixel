@@ -9,6 +9,7 @@
 #include "vehicle.h"
 #include "utils.h"
 #include "robotics_scenario.h"
+#include "simulator_3d.h"
 
 #include <vector>
 
@@ -17,15 +18,25 @@ namespace autonomous_driving
 /**
  * @brief Structure representing the initial configuration of a vehicle.
  */
+enum class SimulatorMode {
+    Planar2D,
+    Preview3D
+};
+
 struct InitialConfig{
+    std::string scenarioName = "default"; /**< Human-friendly scenario name for user-authored scenarios. */
+    SimulatorMode simulatorMode = SimulatorMode::Planar2D; /**< 2D mode or lightweight 3D preview mode. */
     std::string CarPngPath; /**< Path to the car PNG file. */
     int32_t width; /**< Width of the vehicle. */
     int32_t height; /**< Height of the vehicle. */
     float_t xPosition; /**< X-coordinate of the initial position of the vehicle. */
     float_t yPosition; /**< Y-coordinate of the initial position of the vehicle. */
     std::vector<RectangleObstacle> obstacles; /**< Scenario obstacles for robotics navigation testing. */
-    RangeSensorConfig rangeSensor; /**< Configurable 2D range sensor noise/dropout model. */
+    std::vector<BoxObstacle3D> obstacles3D; /**< 3D scenario boxes for preview rendering and 3D range scans. */
+    Camera3D camera3D; /**< Camera used by the 3D preview renderer. */
+    RangeSensorConfig rangeSensor; /**< Configurable 2D/3D range sensor noise/dropout model. */
     bool showRoboticsOverlay = true; /**< Draw range rays, obstacles, and debugging HUD. */
+    bool showGuiOverlay = true; /**< Draw controls, scenario details, and mode information. */
 };
 
 /**
@@ -39,6 +50,9 @@ struct InitialConfig{
  * @param gameConfig The InitialConfig object to be populated with the YAML data.
  */
 void getYAMLData(const std::string& yaml_path, InitialConfig& gameConfig);
+
+SimulatorMode parseSimulatorMode(const std::string& text);
+std::string simulatorModeToString(SimulatorMode mode);
 
 /**
  * @brief Extracts the width and height from a given window size string.
@@ -146,6 +160,7 @@ private:
     logger::Logger data_log;
 
     std::vector<RangeReading> last_scan;
+    std::vector<RangeReading3D> last_scan_3d;
 
     /**
      * @brief Draws robotics debugging overlays such as range rays and obstacles.
@@ -153,9 +168,24 @@ private:
     void draw_robotics_overlay();
 
     /**
+     * @brief Draws a lightweight wireframe 3D preview using olcPGE 2D primitives.
+     */
+    void draw_3d_preview();
+
+    /**
+     * @brief Draws in-window GUI help and scenario status.
+     */
+    void draw_gui_overlay();
+
+    /**
      * @brief Returns the simulated sensor origin at the vehicle center.
      */
     Point2D get_sensor_origin() const;
+
+    /**
+     * @brief Returns the simulated 3D sensor origin using screen position as ground-plane coordinates.
+     */
+    Vec3 get_sensor_origin_3d() const;
 
 public:
     AutonomousVehicle(const autonomous_driving::InitialConfig& gameConfig);
