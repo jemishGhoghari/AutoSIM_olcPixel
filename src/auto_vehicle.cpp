@@ -25,7 +25,7 @@ bool autonomous_driving::AutonomousVehicle::OnUserCreate() {
     acceleration = 1.0f;
     angle = 0.0f;
     velocity = 0;
-    rotational_velocity = 0.1;
+    rotational_velocity = 3.0f;
     max_vel = 500;
 
     data_log.log(logger::LogLevel::INFO, "Car Loaded. Car started....");
@@ -47,26 +47,22 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
     Clear(olc::WHITE);
 
     // Keyboard Events
-    if (GetKey(olc::Key::UP).bHeld) {
+    const bool accelerating = GetKey(olc::Key::UP).bHeld;
+    const bool reversing = GetKey(olc::Key::DOWN).bHeld;
+    const bool steeringLeft = GetKey(olc::Key::LEFT).bHeld;
+    const bool steeringRight = GetKey(olc::Key::RIGHT).bHeld;
+
+    if (accelerating) {
         move_forward(fElapsedTime);
-    } else if (GetKey(olc::Key::DOWN).bHeld) {
+    } else if (reversing) {
         move_backward(fElapsedTime);
-    }
-
-    if (GetKey(olc::Key::LEFT).bHeld) {
-        rotate_car(true, false);
-    } else if (GetKey(olc::Key::RIGHT).bHeld) {
-        rotate_car(false, true);
-    }
-
-    if (!GetKey(olc::Key::UP).bHeld && !GetKey(olc::Key::DOWN).bHeld) {
-        if (velocity < 0) {
-            velocity += 0.5;
-        }
-        if (velocity > 0) {
-            velocity -= 0.5;
-        }
+    } else {
+        apply_drag(fElapsedTime);
         move(fElapsedTime);
+    }
+
+    if (steeringLeft || steeringRight) {
+        rotate_car(steeringLeft, steeringRight, fElapsedTime);
     }
 
     universal_boundaries(); // Set universal boundaries keep vehicle on the Screen
@@ -118,11 +114,16 @@ bool autonomous_driving::AutonomousVehicle::OnUserUpdate(float fElapsedTime) {
 }
 
 void autonomous_driving::AutonomousVehicle::move(float fElapsedTime) {
-    float_t verticle = std::cos(angle) * velocity;
-    float_t horizontal = std::sin(angle) * velocity;
-    
-    position.y -= verticle * fElapsedTime;
-    position.x -= horizontal * fElapsedTime;
+    if (std::fabs(velocity) <= stationary_speed_threshold) {
+        velocity = 0.0f;
+        return;
+    }
+
+    const float_t forwardX = std::sin(angle);
+    const float_t forwardY = -std::cos(angle);
+
+    position.x += forwardX * velocity * fElapsedTime;
+    position.y += forwardY * velocity * fElapsedTime;
 }
 
 void autonomous_driving::AutonomousVehicle::move_forward(float fElapsedTime) {
@@ -135,9 +136,27 @@ void autonomous_driving::AutonomousVehicle::move_backward(float fElapsedTime) {
     move(fElapsedTime);
 }
 
-void autonomous_driving::AutonomousVehicle::rotate_car(bool left, bool right) {
-    if (left) angle += rotational_velocity;
-    if (right) angle -= rotational_velocity; 
+void autonomous_driving::AutonomousVehicle::apply_drag(float fElapsedTime) {
+    const float drag = acceleration * 30.0f * fElapsedTime;
+
+    if (std::fabs(velocity) <= drag) {
+        velocity = 0.0f;
+        return;
+    }
+
+    velocity += velocity > 0.0f ? -drag : drag;
+}
+
+void autonomous_driving::AutonomousVehicle::rotate_car(bool left, bool right, float fElapsedTime) {
+    if (std::fabs(velocity) <= stationary_speed_threshold || left == right) {
+        return;
+    }
+
+    const float steeringDirection = right ? 1.0f : -1.0f;
+    const float movementDirection = velocity > 0.0f ? 1.0f : -1.0f;
+    const float speedRatio = std::clamp(std::fabs(velocity) / max_vel, minimum_steering_scale, 1.0f);
+
+    angle += steeringDirection * movementDirection * rotational_velocity * speedRatio * fElapsedTime;
 }
 
 autonomous_driving::Point2D autonomous_driving::AutonomousVehicle::get_sensor_origin() const {

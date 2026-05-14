@@ -105,9 +105,19 @@ private:
     float velocity;
   
     /**
-     * @brief The rotational velocity of the vehicle.
+     * @brief The rotational velocity of the vehicle in radians per second at maximum speed.
      */
     float rotational_velocity;
+
+    /**
+     * @brief Speeds at or below this value are considered stopped for movement and steering.
+     */
+    static constexpr float stationary_speed_threshold = 0.01f;
+
+    /**
+     * @brief Minimum steering responsiveness once the vehicle is moving.
+     */
+    static constexpr float minimum_steering_scale = 0.25f;
 
     /**
      * Represents a 2D vector with integer components.
@@ -230,12 +240,21 @@ public:
     void move_backward(float fElapsedTime);
 
     /**
-     * Rotates the car in the specified direction.
+     * Applies drag when no throttle input is held.
+     *
+     * @param fElapsedTime The elapsed time since the last frame.
+     */
+    void apply_drag(float fElapsedTime);
+
+    /**
+     * Rotates the car in the specified direction only while the vehicle is moving.
+     * Steering is reversed while backing up so turns follow the current travel direction.
      *
      * @param left Specifies whether the car should rotate left.
      * @param right Specifies whether the car should rotate right.
+     * @param fElapsedTime The elapsed time since the last frame.
      */
-    void rotate_car(bool left, bool right);
+    void rotate_car(bool left, bool right, float fElapsedTime);
 
     /**
      * @brief Sets the universal boundaries for the vehicle.
